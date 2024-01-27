@@ -1,0 +1,40 @@
+title SubmitInformation Sequence Diagram
+
+participant SubmitInformationActivity as activity
+participant SubmitInformationController as controller
+participant AttributeController as attribute
+participant DocumentController as document
+participant JurisdictionRegistrationInfoAccessor as ajri
+participant NotificationController as notification
+
+
+activity->controller: submitInformation(String accountId, String jurisdictionId)
+activate activity
+activate controller
+
+controller->attribute: markAttributesAsSubmitted(String accountId, String jurisdictionId)
+activate attribute
+attribute->controller: void
+deactivate attribute
+
+controller->document: markDocumentsAsSubmitted(String accountId, String jurisdictionId)
+activate document
+document->controller: void
+deactivate document
+
+controller->ajri: getJurisdictionRegistrationInfo(String accountId, String jurisdictionId)
+activate ajri
+ajri->controller: Optional<JurisdictionRegistrationInfo>
+controller->ajri: update(JurisdictionRegistrationInfo updatedJurisdictionRegistrationInfo)
+note right of controller: We update the Registration Status as 'INFO_SUBMITTED'
+ajri->controller: void
+deactivate ajri
+
+controller->notification: sendSubmitInformationNotification(String accountId, String jurisdictionId)
+activate notification
+notification->controller: void
+deactivate notification
+
+controller->activity: void
+deactivate controller
+deactivate activity

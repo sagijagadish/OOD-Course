@@ -1,0 +1,40 @@
+title RemoveJurisdictions Sequence Diagram
+
+participant RemoveJurisdictionsActivity as activity
+participant RemoveJurisdictionsController as controller
+participant JurisdictionRegistrationInfoAccessor as ajri
+participant NotificationController as notification
+
+activity->controller: removeJurisdictions(String accountId, List<String>jurisdictionIds)
+activate activity
+activate controller
+
+loop over Jurisdictions
+
+    controller->ajri: getJurisdictionRegistrationInfo(String accountId, String jurisdictionId)
+    activate ajri
+    ajri-> controller: Optional<JurisdictionRegistrationInfo>
+    
+    alt JurisdictionRegistrationInfo entry not found in DB.
+        controller->activity: throw JurisdictionRegistrationInfo not found
+    else Jurisdiction Registration Status InActive
+        controller->activity: throw RegistrationStatusInActiveException
+    else No Exception
+        controller->ajri: update(JurisdictionRegistrationInfo updatedJurisdictionRegistrationInfo)
+        ajri->controller: void
+        
+        deactivate ajri
+        
+        controller->notification: sendRemoveJurisdictionNotification(String accountId, String jurisdictionId)
+        activate notification
+        notification->controller: void
+        deactivate notification
+    
+    end
+
+end loop
+
+controller->activity: void
+
+deactivate controller
+deactivate activity

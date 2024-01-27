@@ -1,0 +1,44 @@
+title AddJurisdictions Sequence Diagram
+
+participant AddJurisdictionsActivity as activity
+participant AddJurisdictionsController as controller
+participant JurisdictionRegistrationInfoAccessor as ajri
+participant NotificationController as notification
+
+activity->controller: addJurisdictions(String accountId, List<String>jurisdictionIds)
+activate activity
+activate controller
+
+loop over Jurisdictions
+
+    controller->ajri: getJurisdictionRegistrationInfo(String accountId, String jurisdictionId)
+    activate ajri
+    ajri-> controller: Optional<JurisdictionRegistrationInfo>
+    
+    alt Jurisdiction Registration Status is Active or Completed.
+        controller->activity: throw RegistrationStatusNotInActiveException
+    else No Exception
+    
+        alt JurisdictionRegistrationInfo found in DB
+            note right of controller: When the Jurisdiction was off-boarded \n after starting the registration process earlier. \n This results in marking the Jurisdiction as \n Inactive.
+            controller->ajri: update(JurisdictionRegistrationInfo updatedJurisdictionRegistrationInfo)
+            ajri->controller: void
+        else
+            controller->ajri: create(String accountId, String jurisdictionId)
+            ajri->controller: void
+        end
+        deactivate ajri
+        
+        controller->notification: sendAddJurisdictionNotification(String accountId, String jurisdictionId)
+        activate notification
+        notification->controller: void
+        deactivate notification
+    
+    end
+
+end loop
+
+controller->activity: void
+
+deactivate controller
+deactivate activity
