@@ -17,8 +17,8 @@ loop over Jurisdictions
     
     alt JurisdictionRegistrationInfo entry not found in DB.
         controller->activity: throw JurisdictionRegistrationInfo not found
-    else Jurisdiction Registration Status InActive
-        controller->activity: throw RegistrationStatusInActiveException
+    else Jurisdiction Registration Status Not Active
+        controller->activity: throw RegistrationStatusNotActiveException
     else No Exception
         controller->ajri: update(JurisdictionRegistrationInfo updatedJurisdictionRegistrationInfo)
         ajri->controller: void
